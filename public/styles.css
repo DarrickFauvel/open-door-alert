@@ -1,0 +1,1170 @@
+/* ---------- tokens ---------- */
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(oklch(97% 0.005 250), oklch(18% 0.015 260));
+  --surface: light-dark(oklch(100% 0 0), oklch(23% 0.018 260));
+  --surface-2: light-dark(oklch(95% 0.008 250), oklch(28% 0.02 260));
+  --text: light-dark(oklch(25% 0.02 260), oklch(93% 0.01 260));
+  --muted: light-dark(oklch(50% 0.02 260), oklch(70% 0.02 260));
+  --border: light-dark(oklch(88% 0.01 260), oklch(34% 0.02 260));
+  --accent: oklch(60% 0.15 250);
+  --red: oklch(62% 0.24 27);
+  --red-soft: oklch(62% 0.24 27 / 0.15);
+  --green: oklch(65% 0.16 150);
+  --amber: oklch(78% 0.16 75);
+  --wood: oklch(48% 0.09 50);
+  --wood-dark: oklch(38% 0.08 50);
+  --radius: 16px;
+  --shadow: 0 1px 2px oklch(0% 0 0 / 0.06), 0 8px 24px oklch(0% 0 0 / 0.08);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  transition: box-shadow 0.4s var(--ease);
+
+  /* Red edge glow around the page while the door is open */
+  &.door-open {
+    box-shadow: inset 0 0 0 4px var(--red), inset 0 0 60px var(--red-soft);
+  }
+  &.door-open[data-led='fast'] {
+    animation: edge-blink 0.3s step-end infinite;
+  }
+}
+
+h1,
+h2 {
+  margin: 0;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-block-end: 1rem;
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.7rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 0.15s var(--ease), background 0.2s;
+
+  &:hover {
+    background: color-mix(in oklch, var(--surface-2), var(--text) 8%);
+  }
+  &:active {
+    transform: scale(0.97);
+  }
+  &:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+  &.primary {
+    background: var(--accent);
+    border-color: transparent;
+    color: white;
+    min-width: 9rem;
+  }
+}
+
+kbd {
+  font: 0.8em ui-monospace, monospace;
+  padding: 0.1em 0.4em;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+}
+
+/* ---------- layout ---------- */
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem clamp(1rem, 4vw, 2rem);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+
+  h1 {
+    font-size: 1.35rem;
+  }
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.badge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+
+  &.warn {
+    color: light-dark(oklch(45% 0.12 70), var(--amber));
+  }
+  &.live::before {
+    content: '';
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-inline-end: 0.4rem;
+    border-radius: 50%;
+    background: var(--green);
+    vertical-align: 0.05em;
+  }
+  &.live.off::before {
+    background: var(--amber);
+    animation: blink 1s infinite;
+  }
+}
+
+.grid {
+  display: grid;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+  padding: clamp(1rem, 3vw, 2rem);
+  max-width: 1200px;
+  margin-inline: auto;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+}
+
+.card {
+  container-type: inline-size;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  box-shadow: var(--shadow);
+}
+
+.door-card {
+  grid-column: span 1;
+}
+
+.circuit-card,
+.log-card {
+  grid-column: 1 / -1;
+}
+
+/* ---------- door scene ---------- */
+.door-scene {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding-block: 0.5rem 1rem;
+}
+
+.led-housing {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  background: light-dark(oklch(85% 0.005 260), oklch(30% 0.01 260));
+  box-shadow: inset 0 2px 4px oklch(0% 0 0 / 0.3);
+}
+
+.led {
+  --led-off-bg: radial-gradient(circle at 35% 30%, oklch(55% 0.08 25), oklch(30% 0.08 25));
+  --led-off-shadow: inset 0 -2px 4px oklch(0% 0 0 / 0.4);
+
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--led-off-bg);
+  box-shadow: var(--led-off-shadow);
+  transition: background 0.15s, box-shadow 0.15s;
+
+  &.on {
+    background: radial-gradient(circle at 35% 30%, oklch(95% 0.08 30), var(--red) 55%, oklch(45% 0.2 27));
+    box-shadow:
+      0 0 12px 4px oklch(62% 0.24 27 / 0.8),
+      0 0 40px 14px oklch(62% 0.24 27 / 0.45);
+    animation: led-pulse 1.2s ease-in-out infinite;
+  }
+
+  /* Escalation, mirroring src/hardware/led-patterns.js (on ms + off ms) */
+  &.on[data-pattern='slow'] {
+    animation: led-blink 1.2s step-end infinite;
+  }
+  &.on[data-pattern='fast'] {
+    animation: led-blink 0.3s step-end infinite;
+  }
+}
+
+.frame {
+  position: relative;
+  width: 160px;
+  height: 250px;
+  padding: 10px 10px 0;
+  background: light-dark(oklch(92% 0.01 80), oklch(35% 0.02 60));
+  border-radius: 6px 6px 0 0;
+  perspective: 700px;
+}
+
+/* ---------- outside: live weather scene behind the door ---------- */
+.outside {
+  --sky-top: oklch(72% 0.12 235);
+  --sky-bottom: oklch(90% 0.05 220);
+  --cloud: oklch(98% 0 0);
+  --lawn: oklch(68% 0.14 145);
+  --siding: oklch(70% 0.05 240);
+  --roof: oklch(35% 0.02 260);
+  --window: oklch(78% 0.05 225);
+  --road: oklch(45% 0.01 260);
+  --road-line: oklch(85% 0.15 90);
+  --curb: oklch(78% 0.01 260);
+
+  position: absolute;
+  inset: 10px 10px 0;
+  overflow: hidden;
+  background: linear-gradient(var(--sky-top), var(--sky-bottom));
+  transition: filter 0.6s;
+
+  > span {
+    position: absolute;
+    display: none;
+  }
+
+  /* Sun on the left: the door hinges right and covers that side when open */
+  .sun {
+    display: block;
+    top: 20px;
+    left: 20px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 18px 4px oklch(85% 0.15 85 / 0.6);
+  }
+
+  .stars {
+    inset: 0 0 40%;
+    background:
+      radial-gradient(1px 1px at 20% 30%, white, transparent),
+      radial-gradient(1px 1px at 70% 15%, white, transparent),
+      radial-gradient(1.5px 1.5px at 45% 55%, white, transparent),
+      radial-gradient(1px 1px at 85% 45%, white, transparent),
+      radial-gradient(1px 1px at 30% 75%, white, transparent),
+      radial-gradient(1.5px 1.5px at 60% 85%, white, transparent);
+    animation: blink 4s ease-in-out infinite;
+  }
+
+  .cloud {
+    width: 56px;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--cloud);
+    animation: drift 24s ease-in-out infinite alternate;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: inherit;
+    }
+    &::before {
+      width: 26px;
+      height: 26px;
+      left: 9px;
+      top: -12px;
+    }
+    &::after {
+      width: 20px;
+      height: 20px;
+      left: 27px;
+      top: -8px;
+    }
+  }
+  .c1 {
+    top: 40px;
+    left: 4px;
+  }
+  .c2 {
+    top: 70px;
+    left: 70px;
+    scale: 0.8;
+    animation-duration: 30s;
+    animation-delay: -8s;
+  }
+  .c3 {
+    top: 24px;
+    left: 84px;
+    scale: 0.9;
+    animation-duration: 36s;
+    animation-delay: -15s;
+  }
+
+  .precip {
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='40'%3E%3Cg stroke='%23dbe9ff' stroke-width='1.5' stroke-linecap='round'%3E%3Cline x1='6' y1='2' x2='3' y2='12'/%3E%3Cline x1='18' y1='22' x2='15' y2='32'/%3E%3C/g%3E%3C/svg%3E");
+    animation: rain 0.5s linear infinite;
+  }
+
+  .fog {
+    inset: 0;
+    background:
+      linear-gradient(transparent 20%, oklch(96% 0 0 / 0.75) 45%, oklch(96% 0 0 / 0.5) 70%, oklch(96% 0 0 / 0.85)),
+      repeating-linear-gradient(transparent 0 14px, oklch(100% 0 0 / 0.25) 14px 22px);
+    animation: drift 12s ease-in-out infinite alternate;
+  }
+
+  /* Across the street: lawn, a clapboard colonial, and the road in front */
+  .lawn {
+    display: block;
+    inset: auto 0 30px;
+    height: 52px;
+    background: var(--lawn);
+    transition: background 0.6s;
+  }
+
+  .house {
+    display: block;
+    left: 12px;
+    bottom: 66px;
+    width: 84px;
+    height: 50px;
+    background:
+      repeating-linear-gradient(transparent 0 5px, oklch(0% 0 0 / 0.1) 5px 6px),
+      var(--siding);
+
+    span {
+      position: absolute;
+    }
+    .roof {
+      left: -8px;
+      right: -8px;
+      bottom: 100%;
+      height: 30px;
+      background: var(--roof);
+      clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    }
+    .chimney {
+      left: 60px;
+      bottom: calc(100% + 12px);
+      width: 9px;
+      height: 22px;
+      background: oklch(45% 0.1 30);
+    }
+    .win {
+      top: 10px;
+      width: 16px;
+      height: 14px;
+      background:
+        linear-gradient(white, white) center / 2px 100% no-repeat,
+        var(--window);
+      outline: 2px solid oklch(97% 0 0);
+      transition: background 0.6s, box-shadow 0.6s;
+    }
+    .w1 {
+      left: 10px;
+    }
+    .w2 {
+      right: 10px;
+    }
+    .house-door {
+      left: 35px;
+      bottom: 0;
+      width: 14px;
+      height: 26px;
+      border-radius: 7px 7px 0 0;
+      background: oklch(42% 0.15 25);
+    }
+  }
+
+  .road {
+    display: block;
+    inset: auto 0 0;
+    height: 30px;
+    background:
+      repeating-linear-gradient(90deg, var(--road-line) 0 10px, transparent 10px 20px) 0 17px / 100% 2px no-repeat,
+      linear-gradient(var(--curb) 0 4px, var(--road) 4px);
+    transition: background 0.6s;
+  }
+
+  .flash {
+    inset: 0;
+    background: white;
+    opacity: 0;
+    animation: lightning 6s infinite;
+  }
+
+  /* --- conditions --- */
+  &[data-weather='partly'] {
+    .c1,
+    .c3 {
+      display: block;
+    }
+  }
+
+  &:is([data-weather='cloudy'], [data-weather='fog'], [data-weather='drizzle'], [data-weather='rain'], [data-weather='snow'], [data-weather='storm']) {
+    .sun {
+      display: none;
+    }
+    .cloud {
+      display: block;
+    }
+  }
+
+  &[data-weather='cloudy'] {
+    --sky-top: oklch(76% 0.02 240);
+    --sky-bottom: oklch(88% 0.01 240);
+    --cloud: oklch(92% 0.005 240);
+  }
+
+  &[data-weather='fog'] {
+    --sky-top: oklch(84% 0.01 240);
+    --sky-bottom: oklch(90% 0.005 240);
+    --cloud: oklch(93% 0 0);
+    --lawn: oklch(75% 0.05 145);
+    .fog {
+      display: block;
+    }
+  }
+
+  &[data-weather='drizzle'] {
+    --sky-top: oklch(68% 0.03 240);
+    --sky-bottom: oklch(82% 0.02 240);
+    --cloud: oklch(85% 0.01 240);
+    .precip {
+      display: block;
+      opacity: 0.55;
+      animation-duration: 0.9s;
+    }
+  }
+
+  &:is([data-weather='rain'], [data-weather='storm']) {
+    --sky-top: oklch(52% 0.03 245);
+    --sky-bottom: oklch(68% 0.02 240);
+    --cloud: oklch(70% 0.01 240);
+    --lawn: oklch(55% 0.11 145);
+    --road: oklch(35% 0.01 260);
+    .precip {
+      display: block;
+    }
+  }
+
+  &[data-weather='storm'] {
+    --sky-top: oklch(32% 0.04 265);
+    --sky-bottom: oklch(48% 0.03 260);
+    --cloud: oklch(50% 0.015 260);
+    .precip {
+      animation-duration: 0.35s;
+    }
+    .flash {
+      display: block;
+    }
+  }
+
+  &[data-weather='snow'] {
+    --sky-top: oklch(80% 0.02 240);
+    --sky-bottom: oklch(93% 0.01 240);
+    --cloud: oklch(95% 0.005 240);
+    --lawn: oklch(97% 0.005 240);
+    --road: oklch(62% 0.01 260);
+    .house .roof {
+      background: linear-gradient(oklch(97% 0 0) 0 55%, var(--roof) 55%);
+    }
+    .precip {
+      display: block;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='40'%3E%3Cg fill='white'%3E%3Ccircle cx='5' cy='6' r='1.8'/%3E%3Ccircle cx='19' cy='18' r='1.4'/%3E%3Ccircle cx='11' cy='31' r='2'/%3E%3Ccircle cx='26' cy='36' r='1.3'/%3E%3C/g%3E%3C/svg%3E");
+      animation: snow 5s linear infinite;
+    }
+  }
+
+  /* --- night --- */
+  &.night {
+    --lawn: oklch(32% 0.06 150);
+    --siding: oklch(36% 0.04 250);
+    --roof: oklch(20% 0.02 260);
+    --road: oklch(25% 0.01 260);
+    --road-line: oklch(55% 0.1 90);
+    --curb: oklch(40% 0.01 260);
+    --window: oklch(88% 0.14 85);
+
+    .sun {
+      background: oklch(93% 0.02 95);
+      box-shadow:
+        inset -9px -3px 0 0 oklch(80% 0.02 95),
+        0 0 16px 3px oklch(95% 0.02 95 / 0.35);
+    }
+    .house .win {
+      box-shadow: 0 0 10px 2px oklch(85% 0.15 85 / 0.6);
+    }
+    .fog {
+      opacity: 0.35;
+    }
+  }
+  &.night:is([data-weather='clear'], [data-weather='partly']) {
+    --sky-top: oklch(20% 0.06 270);
+    --sky-bottom: oklch(34% 0.07 265);
+    --cloud: oklch(45% 0.03 265);
+    .stars {
+      display: block;
+    }
+  }
+  &.night:not([data-weather='clear'], [data-weather='partly']) {
+    --sky-top: oklch(24% 0.025 260);
+    --sky-bottom: oklch(34% 0.02 260);
+    --cloud: oklch(38% 0.01 260);
+  }
+  &.night[data-weather='snow'] {
+    --lawn: oklch(72% 0.01 260);
+    --road: oklch(45% 0.01 260);
+  }
+  &.night[data-weather='storm'] {
+    --sky-top: oklch(16% 0.03 265);
+    --sky-bottom: oklch(26% 0.03 260);
+  }
+}
+
+.weather-chip {
+  margin: 1.25rem 0 0; /* clears the open door, which swings past the frame */
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: var(--surface-2);
+  color: var(--muted);
+
+  &.preview {
+    outline: 1px dashed var(--accent);
+    text-transform: capitalize;
+  }
+}
+
+.preview-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+
+  label {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  select {
+    font: inherit;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    text-transform: capitalize;
+  }
+}
+
+.door {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 14px;
+  padding: 18px 16px;
+  background: linear-gradient(90deg, var(--wood-dark), var(--wood) 8%, var(--wood) 92%, var(--wood-dark));
+  border-radius: 2px;
+  transform-origin: right center; /* hinges on the right */
+  transition: rotate 0.7s var(--ease), filter 0.7s;
+  box-shadow: 0 2px 6px oklch(0% 0 0 / 0.3);
+
+  .panel {
+    border: 3px solid var(--wood-dark);
+    border-radius: 3px;
+  }
+
+  /* Upper half is glass: the mask cuts a window (just inside the top panel's
+     frame) so the weather outside shows through; a little glare stays visible. */
+  --glass-x: 19px;
+  --glass-y: 21px;
+  --glass: var(--glass-x) var(--glass-y) / calc(100% - 2 * var(--glass-x)) calc(50% - 31px) no-repeat;
+  mask:
+    /* muntins (solid), added back over the hole */
+    linear-gradient(90deg, transparent calc(50% - 2px), black 0 calc(50% + 2px), transparent 0) var(--glass),
+    linear-gradient(transparent calc(50% - 2px), black 0 calc(50% + 2px), transparent 0) var(--glass),
+    /* the glass: mostly see-through, with a diagonal glare */
+    linear-gradient(135deg, oklch(0% 0 0 / 0.7), oklch(0% 0 0 / 0.95) 40%, oklch(0% 0 0 / 0.95) 70%, oklch(0% 0 0 / 0.78)) var(--glass),
+    linear-gradient(black, black);
+  mask-composite: add, add, exclude, add;
+
+  .panel:first-child {
+    /* What remains visible through the mask: glare on the glass, plus muntins */
+    background:
+      linear-gradient(var(--wood-dark), var(--wood-dark)) center / 4px 100% no-repeat,
+      linear-gradient(var(--wood-dark), var(--wood-dark)) center / 100% 4px no-repeat,
+      white;
+    box-shadow: inset 0 0 0 1px var(--wood-dark);
+  }
+  .knob {
+    position: absolute;
+    left: 14px;
+    top: 52%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 1px 2px oklch(0% 0 0 / 0.5);
+  }
+  .magnet {
+    position: absolute;
+    left: 0;
+    top: 22px;
+    width: 8px;
+    height: 22px;
+    background: linear-gradient(var(--red) 50%, oklch(55% 0.1 250) 50%);
+    border-radius: 0 2px 2px 0;
+  }
+}
+
+.reed-sensor {
+  position: absolute;
+  left: 0;
+  top: 32px;
+  width: 10px;
+  height: 22px;
+  background: light-dark(white, oklch(85% 0 0));
+  border: 1px solid var(--border);
+  border-radius: 2px 0 0 2px;
+}
+
+body.door-open .door {
+  rotate: y 75deg; /* knob side swings toward the viewer */
+  filter: brightness(0.75);
+}
+
+/* ---------- stats ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin: 0 0 0.75rem;
+  text-align: center;
+
+  div {
+    padding: 0.6rem 0.25rem;
+    background: var(--surface-2);
+    border-radius: 10px;
+  }
+  dt {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  dd {
+    margin: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+body.door-open .state {
+  color: var(--red);
+}
+
+.countdown {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+  margin-block-end: 1rem;
+
+  span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--amber), var(--red));
+    transition: width 1s linear;
+  }
+  &.fired span {
+    animation: blink 1s infinite;
+  }
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.hint {
+  margin: 0.9rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* ---------- phone ---------- */
+.phone {
+  position: relative;
+  width: min(100%, 290px);
+  aspect-ratio: 9 / 18;
+  margin-inline: auto;
+  padding: 12px;
+  border-radius: 42px;
+  background: oklch(20% 0.01 260);
+  box-shadow: var(--shadow), inset 0 0 0 2px oklch(40% 0.01 260);
+
+  .notch {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    translate: -50% 0;
+    width: 80px;
+    height: 22px;
+    border-radius: 999px;
+    background: black;
+    z-index: 1;
+  }
+}
+
+.lockscreen {
+  height: 100%;
+  overflow: hidden;
+  border-radius: 32px;
+  padding: 3.5rem 0.7rem 1rem;
+  mask-image: linear-gradient(black 88%, transparent 98%);
+  color: white;
+  background:
+    radial-gradient(circle at 20% 10%, oklch(55% 0.15 280), transparent 60%),
+    radial-gradient(circle at 90% 90%, oklch(50% 0.15 200), transparent 60%),
+    oklch(25% 0.05 270);
+
+  .clock {
+    display: block;
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 300;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .date {
+    margin: 0.25rem 0 1rem;
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.85;
+  }
+}
+
+.notifications {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+
+  .empty {
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.6;
+  }
+}
+
+.note {
+  padding: 0.6rem 0.75rem;
+  border-radius: 16px;
+  background: oklch(100% 0 0 / 0.82);
+  color: oklch(20% 0.01 260);
+  font-size: 0.78rem;
+  transition: opacity 0.4s var(--ease), translate 0.4s var(--ease);
+
+  @starting-style {
+    opacity: 0;
+    translate: 0 -12px;
+  }
+
+  &.p4,
+  &.p5 {
+    box-shadow: inset 4px 0 0 var(--red);
+  }
+
+  strong {
+    display: block;
+    font-size: 0.85rem;
+  }
+  p {
+    margin: 0.1rem 0 0.25rem;
+  }
+}
+
+.note-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.status {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+
+  &.sent {
+    color: oklch(50% 0.15 150);
+  }
+  &.dry-run,
+  &.sending {
+    color: oklch(55% 0.12 70);
+  }
+  &.failed {
+    color: var(--red);
+  }
+}
+
+/* ---------- circuit ---------- */
+.circuit-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.circuit {
+  min-width: 600px;
+  width: 100%;
+  height: auto;
+  font: 13px system-ui, sans-serif;
+  fill: var(--text);
+
+  .board {
+    fill: oklch(45% 0.1 155);
+    stroke: oklch(35% 0.09 155);
+    stroke-width: 2;
+  }
+  .board-title {
+    fill: white;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .pi .muted {
+    fill: oklch(90% 0.04 155);
+  }
+  .pin rect {
+    fill: oklch(80% 0.12 85);
+    stroke: oklch(55% 0.1 85);
+  }
+  .pin text {
+    fill: white;
+    font-weight: 600;
+  }
+
+  .small {
+    font-size: 11px;
+  }
+  .muted {
+    fill: var(--muted);
+  }
+  .on-dark {
+    fill: white;
+    font-weight: 700;
+  }
+  .label {
+    font-weight: 600;
+  }
+
+  .wire,
+  .resistor {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 3;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    transition: stroke 0.3s;
+  }
+  .node {
+    fill: var(--text);
+  }
+
+  .reed-glass {
+    fill: oklch(85% 0.04 220 / 0.25);
+    stroke: oklch(70% 0.04 220);
+    stroke-dasharray: 4 3;
+  }
+  .reed-blade {
+    stroke: var(--text);
+    stroke-width: 3;
+    stroke-linecap: round;
+    transform-box: view-box;
+    transform-origin: 360px 140px;
+    transition: rotate 0.35s var(--ease);
+  }
+  .magnet-sym {
+    transition: translate 0.6s var(--ease), opacity 0.6s;
+    .n {
+      fill: var(--red);
+    }
+    .s {
+      fill: oklch(55% 0.12 250);
+    }
+  }
+
+  .led-body {
+    fill: oklch(45% 0.08 25 / 0.35);
+    stroke: var(--text);
+    stroke-width: 2;
+    stroke-linejoin: round;
+    transition: fill 0.2s;
+  }
+  .led-bar {
+    stroke: var(--text);
+    stroke-width: 3;
+  }
+  .led-rays {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1.5;
+  }
+  .led-glow {
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .value {
+    font-weight: 700;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Door closed: reed contacts touch, a small current flows through the pull-up */
+  &:not(.door-open) .reed-loop .wire {
+    stroke: var(--green);
+    stroke-dasharray: 6 8;
+    animation: flow 1s linear infinite;
+  }
+  &:not(.door-open) .door-val {
+    fill: var(--green);
+  }
+
+  /* Door open: blade springs away, magnet moves off */
+  &.door-open {
+    .reed-blade {
+      rotate: -22deg;
+    }
+    .magnet-sym {
+      translate: 0 24px;
+      opacity: 0;
+    }
+    .door-val {
+      fill: var(--red);
+    }
+  }
+
+  /* LED on: current flows through resistor and LED */
+  &.led-on {
+    .flow {
+      stroke: var(--red);
+      stroke-dasharray: 6 8;
+      animation: flow 0.6s linear infinite;
+    }
+    .led-body {
+      fill: var(--red);
+    }
+    .led-rays {
+      stroke: var(--red);
+    }
+    .led-glow {
+      opacity: 1;
+      animation: led-pulse 1.2s ease-in-out infinite;
+    }
+    .led-val {
+      fill: var(--red);
+    }
+  }
+  &.led-on[data-pattern='slow'] :is(.led-glow, .led-body, .led-rays) {
+    animation: svg-blink 1.2s step-end infinite;
+  }
+  &.led-on[data-pattern='fast'] :is(.led-glow, .led-body, .led-rays) {
+    animation: svg-blink 0.3s step-end infinite;
+  }
+}
+
+.parts {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  table {
+    width: 100%;
+    margin-top: 0.75rem;
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 0.45rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  p {
+    color: var(--muted);
+  }
+}
+
+@container (width < 520px) {
+  .parts thead {
+    display: none;
+  }
+  .parts td {
+    display: block;
+    border: 0;
+    padding-block: 0.15rem;
+  }
+  .parts tr {
+    display: block;
+    padding-block: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+/* ---------- log ---------- */
+.log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+
+  li {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.75rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    border-left: 3px solid transparent;
+
+    &:nth-child(odd) {
+      background: var(--surface-2);
+    }
+  }
+  time {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .warn {
+    border-left-color: var(--amber);
+  }
+  .alert,
+  .error {
+    border-left-color: var(--red);
+  }
+  .error span {
+    color: var(--red);
+  }
+  .empty {
+    display: block;
+    color: var(--muted);
+  }
+}
+
+/* ---------- motion ---------- */
+@keyframes led-pulse {
+  50% {
+    filter: brightness(1.25);
+    opacity: 0.85;
+  }
+}
+
+@keyframes led-blink {
+  50% {
+    background: var(--led-off-bg);
+    box-shadow: var(--led-off-shadow);
+  }
+}
+
+@keyframes svg-blink {
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes edge-blink {
+  50% {
+    box-shadow: inset 0 0 0 4px transparent;
+  }
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+@keyframes drift {
+  to {
+    translate: 24px 0;
+  }
+}
+
+@keyframes rain {
+  to {
+    background-position: -24px 80px;
+  }
+}
+
+@keyframes snow {
+  to {
+    background-position: 30px 80px;
+  }
+}
+
+@keyframes lightning {
+  0%,
+  88%,
+  91%,
+  94%,
+  100% {
+    opacity: 0;
+  }
+  89% {
+    opacity: 0.85;
+  }
+  92% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

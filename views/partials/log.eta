@@ -1,0 +1,8 @@
+<ol id="log" class="log" aria-live="polite">
+<% for (const e of it.log) { %>
+  <li class="<%= e.level %>"><time datetime="<%= e.time %>"><%= it.fmtTime(e.time) %></time><span><%= e.text %></span></li>
+<% } %>
+<% if (!it.log.length) { %>
+  <li class="empty">No events yet.</li>
+<% } %>
+</ol>

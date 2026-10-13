@@ -1,0 +1,140 @@
+<% layout('./layout') %>
+<body
+  data-signals="<%= JSON.stringify(it.signals) %>"
+  data-signals:_preview="''"
+  data-signals:_preview-night="false"
+  data-indicator:live
+  data-init="@get('/sse')"
+  data-class="{'door-open': $door === 'open'}"
+  data-attr="{'data-led': $ledPattern}"
+  data-on:keydown__window="evt.key === 'd' && !evt.repeat && @post('/api/door/toggle')"
+>
+  <header class="topbar">
+    <h1><span class="logo" aria-hidden="true">🚪</span> Open Door Alert</h1>
+    <div class="badges">
+      <span class="badge" data-text="$mode === 'gpio' ? 'GPIO · Raspberry Pi' : 'Simulator'"><%= it.config.mode %></span>
+      <span class="badge" data-class="{warn: !$ntfy}" data-text="$ntfy ? 'ntfy: on' : 'ntfy: dry run'"></span>
+      <span class="badge live" data-class="{off: !$live}" data-text="$live ? 'Live' : 'Reconnecting…'">Connecting…</span>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- Door + LED -->
+    <section class="card door-card" aria-labelledby="door-h">
+      <h2 id="door-h"><%= it.config.doorName %></h2>
+
+      <div class="door-scene">
+        <div class="led-housing" title="Red LED by the door">
+          <span class="led" data-class="{on: $led}" data-attr="{'data-pattern': $ledPattern}" role="img" aria-label="Door LED"
+                data-attr:aria-label="{off: 'LED off', steady: 'LED on', slow: 'LED blinking slowly', fast: 'LED blinking fast'}[$ledPattern]"></span>
+        </div>
+        <div class="frame">
+          <div class="outside" aria-hidden="true"
+               data-attr="{'data-weather': $_preview || $weather}"
+               data-class="{night: $_preview ? $_previewNight : !$isDay}">
+            <span class="stars"></span>
+            <span class="sun"></span>
+            <span class="cloud c1"></span><span class="cloud c2"></span><span class="cloud c3"></span>
+            <span class="lawn"></span>
+            <span class="house">
+              <span class="chimney"></span><span class="roof"></span>
+              <span class="win w1"></span><span class="win w2"></span><span class="house-door"></span>
+            </span>
+            <span class="road"></span>
+            <span class="precip"></span>
+            <span class="fog"></span>
+            <span class="flash"></span>
+          </div>
+          <div class="door" aria-hidden="true">
+            <span class="panel"></span><span class="panel"></span>
+            <span class="knob"></span>
+            <span class="magnet" title="Magnet"></span>
+          </div>
+          <span class="reed-sensor" title="Reed switch" aria-hidden="true"></span>
+        </div>
+        <p class="weather-chip" data-class="{preview: $_preview}"
+           data-text="$_preview ? 'Preview: ' + $_preview + ($_previewNight ? ' · night' : '') : $weatherIcon + ' ' + $weatherLabel + ($temp ? ' · ' + $temp : '')"></p>
+      </div>
+
+      <dl class="stats">
+        <div>
+          <dt>Door</dt>
+          <dd class="state" data-text="$door === 'open' ? 'OPEN' : 'Closed'"><%= it.signals.door %></dd>
+        </div>
+        <div>
+          <dt>Open for</dt>
+          <dd data-text="$door === 'open' ? $openSeconds + 's' : '-'">-</dd>
+        </div>
+        <div>
+          <dt>Phone alert</dt>
+          <dd data-text="$door !== 'open' ? 'Idle' : $alertsSent > 0 ? 'Sent ×' + $alertsSent : 'in ' + $alertIn + 's'">Idle</dd>
+        </div>
+      </dl>
+
+      <div class="countdown" role="progressbar" aria-label="Time until phone alert"
+           data-attr:aria-valuenow="$door === 'open' ? Math.min($openSeconds, $alertDelay) : 0"
+           aria-valuemin="0" data-attr:aria-valuemax="$alertDelay"
+           data-class="{fired: $alertsSent > 0}">
+        <span data-style:width="($door === 'open' ? Math.min(100, ($openSeconds + 1) / Math.max($alertDelay, 1) * 100) : 0) + '%'"></span>
+      </div>
+
+      <div class="controls">
+        <button class="primary" data-on:click="@post('/api/door/toggle')"
+                data-text="$door === 'open' ? 'Close door' : 'Open door'">Open door</button>
+        <button data-on:click="@post('/api/alert/test')">Send test alert</button>
+      </div>
+      <div class="preview-controls">
+        <label>Preview weather
+          <select data-bind:_preview>
+            <option value="">Live</option>
+<% for (const scene of it.scenes) { %>
+            <option value="<%= scene %>"><%= scene %></option>
+<% } %>
+          </select>
+        </label>
+        <label data-show="$_preview"><input type="checkbox" data-bind:_preview-night> Night</label>
+      </div>
+      <p class="hint">
+        <span data-show="$mode === 'gpio'">Buttons override the real sensor until it changes again. </span>
+        Tip: press <kbd>D</kbd> to toggle the door. Alert after <strong data-text="$alertDelay + 's'"></strong> open.
+      </p>
+    </section>
+
+    <!-- Phone -->
+    <section class="card phone-card" aria-labelledby="phone-h">
+      <h2 id="phone-h">Your phone</h2>
+      <div class="phone">
+        <div class="notch" aria-hidden="true"></div>
+        <div class="lockscreen">
+          <time class="clock" data-clock>--:--</time>
+          <p class="date" data-date></p>
+          <%~ include('./partials/notifications', it) %>
+        </div>
+      </div>
+    </section>
+
+    <!-- Circuit -->
+    <section class="card circuit-card" aria-labelledby="circuit-h">
+      <h2 id="circuit-h">Circuit</h2>
+      <div class="circuit-scroll"><%~ include('./partials/circuit', it) %></div>
+      <details class="parts">
+        <summary>Parts &amp; wiring</summary>
+        <table>
+          <thead><tr><th>Part</th><th>From</th><th>To</th></tr></thead>
+          <tbody>
+            <tr><td>Magnetic reed switch (door frame) + magnet (door)</td><td>Pin 11 · GPIO<%= it.config.doorPin %></td><td>Pin 9 · GND</td></tr>
+            <tr><td>330 Ω resistor → red 5 mm LED (long leg +)</td><td>Pin 13 · GPIO<%= it.config.ledPin %></td><td>LED short leg → Pin 14 · GND</td></tr>
+          </tbody>
+        </table>
+        <p>The internal pull-up holds GPIO<%= it.config.doorPin %> HIGH. A closed door (magnet near) pulls it LOW.
+           A broken wire reads as <em>open</em>, so the failure mode is safe. LED current ≈ (3.3 V − 2 V) / 330 Ω ≈ 4 mA.</p>
+      </details>
+    </section>
+
+    <!-- Log -->
+    <section class="card log-card" aria-labelledby="log-h">
+      <h2 id="log-h">Event log</h2>
+      <%~ include('./partials/log', it) %>
+    </section>
+  </main>
+</body>
