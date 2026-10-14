@@ -1,12 +1,12 @@
 ---
 name: ship
-description: Verify, commit, push and open/update a GitHub PR for Open Door Alert; optionally deploy to the Raspberry Pi with "pi".
+description: Verify, commit, push, open/update a GitHub PR and merge it to main for Open Door Alert; optionally deploy to the Raspberry Pi with "pi".
 argument-hint: "[pi] [commit/PR summary]"
 disable-model-invocation: true
 allowed-tools: Bash(git *), Bash(gh *), Bash(npm test*), Bash(npm ci*), Bash(node *), Bash(curl *), Bash(rsync *), Bash(ssh *)
 ---
 
-# /ship: verify, commit, push, PR (and optionally deploy to the Pi)
+# /ship: verify, commit, push, PR, merge to main (and optionally deploy to the Pi)
 
 Arguments: `$ARGUMENTS`
 - If the arguments contain the word `pi`, also run the **Deploy to Pi** section.
@@ -36,7 +36,7 @@ Current state:
 
 ## 2. Commit
 
-- If there is nothing to commit and nothing to push, say so and skip to step 3 (or straight to deploy if `pi` was given).
+- If there is nothing to commit and nothing to push, say so and skip to step 3 (an existing open PR still gets merged in step 4).
 - If the current branch is `main`, create a branch first: `git switch -c <type>/<short-kebab-summary>` (for example `feat/quiet-hours`).
 - Stage the relevant files by name rather than `git add -A`, so that stray files aren't committed.
 - Write a conventional-commit style message (`feat:`, `fix:`, `docs:`, `chore:` …):
@@ -52,9 +52,17 @@ Current state:
   - a body with **Summary** (bullets), **Testing** (what you ran in step 1, with results), and, for hardware changes, **Hardware notes** (pins and wiring affected; whether it was tested on a real Pi);
   - the session's PR attribution guidance.
 - If a PR already exists, just push. Mention the PR URL and add a comment only if the change is significant.
-- Never force-push and never push directly to `main` unless the user explicitly asks.
+- Never force-push and never push directly to `main` unless the user explicitly asks. Changes reach `main` only through the PR merge in step 4.
 
-## 4. Deploy to Pi (only when `pi` is in the arguments)
+## 4. Merge to main
+
+1. Wait for CI: `gh pr checks --watch --fail-fast`. If the PR has no checks, continue. If any check fails, show which and stop.
+2. Check the PR can merge: `gh pr view --json mergeable,mergeStateStatus,isDraft`.
+   - If it's a draft, has conflicts (`CONFLICTING`), or is blocked by review rules, report it and stop. Don't resolve conflicts or bypass branch protection on your own.
+3. Merge: `gh pr merge --squash --delete-branch`, using the PR title as the subject and adding the session's commit attribution to the body.
+4. Update the local checkout: `git switch main && git pull --ff-only`. `--delete-branch` normally removes the local feature branch too. If it's still there, delete it only when its tip matches the merged PR head (`git rev-parse <branch>` equals `gh pr view <number> --json headRefOid -q .headRefOid`). In that case use `git branch -D`, because a squash merge makes `-d` refuse. Otherwise keep the branch and mention it in the report.
+
+## 5. Deploy to Pi (only when `pi` is in the arguments)
 
 Settings, read from the environment or from `.env` (`grep` it, and never print token values):
 - `PI_HOST`, default `pi@raspberrypi.local`
@@ -75,11 +83,12 @@ Settings, read from the environment or from `.env` (`grep` it, and never print t
    - `curl -s -o /dev/null -w "%{http_code}" http://<pi-host>:3000/` should return 200.
 5. Remind the user to physically check the door: open it, confirm the LED lights, and confirm the phone alert arrives after `ALERT_DELAY_S`.
 
-## 5. Report
+## 6. Report
 
 Give a short summary:
 - the test and smoke results;
 - the commit hash and branch;
 - the PR URL;
+- the merge commit on `main`, or why it wasn't merged;
 - deploy status, if `pi` was given;
 - anything skipped and why.
