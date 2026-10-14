@@ -15,8 +15,21 @@
       <span class="badge" data-text="$mode === 'gpio' ? 'GPIO · Raspberry Pi' : 'Simulator'"><%= it.config.mode %></span>
       <span class="badge" data-class="{warn: !$ntfy}" data-text="$ntfy ? 'ntfy: on' : 'ntfy: dry run'"></span>
       <span class="badge live" data-class="{off: !$live}" data-text="$live ? 'Live' : 'Reconnecting…'">Connecting…</span>
+      <button class="badge qr-btn" type="button" data-qr-open aria-haspopup="dialog" title="Open on your phone">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zm2 2v3h3V5zm9-2h7v7h-7zm2 2v3h3V5zM3 14h7v7H3zm2 2v3h3v-3zm9-2h2v2h-2zm2 2h2v2h-2zm2-2h3v2h-3zm-4 4h2v3h-2zm4 0h3v3h-2v-1h-1zm-2 2h2v1h-2z"/></svg>
+        QR code
+      </button>
     </div>
   </header>
+
+  <dialog class="qr-sheet" data-qr-dialog closedby="any" aria-labelledby="qr-h">
+    <form method="dialog">
+      <h2 id="qr-h">Open on your phone</h2>
+      <div class="qr-code" data-qr-code role="img" aria-label="QR code for this dashboard"></div>
+      <p class="qr-url" data-qr-url></p>
+      <button class="primary" autofocus>Done</button>
+    </form>
+  </dialog>
 
   <main class="grid">
     <!-- Door + LED -->
@@ -28,7 +41,10 @@
           <span class="led" data-class="{on: $led}" data-attr="{'data-pattern': $ledPattern}" role="img" aria-label="Door LED"
                 data-attr:aria-label="{off: 'LED off', steady: 'LED on', slow: 'LED blinking slowly', fast: 'LED blinking fast'}[$ledPattern]"></span>
         </div>
-        <div class="frame">
+        <div class="frame" role="button" tabindex="0" title="Tap to open or close"
+             data-attr:aria-label="$door === 'open' ? 'Close door' : 'Open door'"
+             data-on:click="@post('/api/door/toggle')"
+             data-on:keydown="(evt.key === 'Enter' || evt.key === ' ') && !evt.repeat && (evt.preventDefault(), @post('/api/door/toggle'))">
           <div class="outside" aria-hidden="true"
                data-attr="{'data-weather': $_preview || $weather}"
                data-class="{night: $_preview ? $_previewNight : !$isDay}">
