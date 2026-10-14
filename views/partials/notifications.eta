@@ -1,0 +1,16 @@
+<ul id="notifications" class="notifications" aria-live="assertive">
+<% for (const n of it.notifications) { %>
+  <li id="note-<%= n.id %>" class="note p<%= n.priority %>">
+    <div class="note-head">
+      <span class="app"><span class="app-icon" aria-hidden="true">🔔</span> ntfy</span>
+      <time datetime="<%= n.time %>"><%= it.fmtTime(n.time) %></time>
+    </div>
+    <strong><%= n.title %></strong>
+    <p><%= n.message %></p>
+    <span class="status <%= n.status %>"><%= n.status === 'dry-run' ? 'dry run (no NTFY_TOPIC)' : n.status %></span>
+  </li>
+<% } %>
+<% if (!it.notifications.length) { %>
+  <li class="empty">No notifications</li>
+<% } %>
+</ul>

@@ -1,0 +1,22 @@
+# Install:
+#   sudo cp deploy/door-alert.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now door-alert
+#   journalctl -u door-alert -f
+[Unit]
+Description=Open Door Alert (reed switch + LED + ntfy)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+Group=gpio
+WorkingDirectory=/home/pi/open-door-alert
+Environment=NODE_ENV=production
+Environment=MODE=gpio
+ExecStart=/usr/bin/node --env-file-if-exists=.env src/server.js
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

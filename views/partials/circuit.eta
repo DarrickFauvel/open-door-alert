@@ -1,0 +1,76 @@
+<svg class="circuit" viewBox="0 0 720 320" role="img"
+     aria-labelledby="circuit-title circuit-desc"
+     data-class="{'door-open': $door === 'open', 'led-on': $led}"
+     data-attr="{'data-pattern': $ledPattern}">
+  <title id="circuit-title">Wiring diagram</title>
+  <desc id="circuit-desc">GPIO<%= it.config.doorPin %> goes through a reed switch to ground. GPIO<%= it.config.ledPin %> goes through a 330 ohm resistor and a red LED to ground.</desc>
+
+  <defs>
+    <radialGradient id="glow">
+      <stop offset="0" stop-color="oklch(65% 0.26 25)" stop-opacity=".9"/>
+      <stop offset="1" stop-color="oklch(65% 0.26 25)" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Raspberry Pi -->
+  <g class="pi">
+    <rect x="20" y="30" width="170" height="270" rx="12" class="board"/>
+    <text x="40" y="58" class="board-title">Raspberry Pi 3</text>
+    <text x="40" y="76" class="small muted">40-pin header (BCM)</text>
+
+    <g class="pin"><rect x="176" y="84" width="12" height="12" rx="2"/><text x="166" y="94" text-anchor="end">Pin 9 · GND</text></g>
+    <g class="pin"><rect x="176" y="134" width="12" height="12" rx="2"/><text x="166" y="144" text-anchor="end">Pin 11 · GPIO<%= it.config.doorPin %></text></g>
+    <text x="166" y="162" text-anchor="end" class="small muted">internal pull-up ↑3.3V</text>
+    <g class="pin"><rect x="176" y="219" width="12" height="12" rx="2"/><text x="166" y="229" text-anchor="end">Pin 13 · GPIO<%= it.config.ledPin %></text></g>
+    <g class="pin"><rect x="176" y="269" width="12" height="12" rx="2"/><text x="166" y="279" text-anchor="end">Pin 14 · GND</text></g>
+  </g>
+
+  <!-- Door sensor loop: GPIO17 -> reed switch -> GND -->
+  <g class="loop reed-loop">
+    <polyline class="wire" points="188,140 330,140 360,140"/>
+    <polyline class="wire" points="402,140 430,140 480,140 480,90 188,90"/>
+
+    <rect x="320" y="124" width="120" height="32" rx="16" class="reed-glass"/>
+    <line class="reed-blade" x1="360" y1="140" x2="402" y2="140"/>
+    <circle cx="360" cy="140" r="3" class="node"/>
+    <circle cx="402" cy="140" r="3" class="node"/>
+    <text x="380" y="116" text-anchor="middle" class="label">Reed switch</text>
+
+    <g class="magnet-sym">
+      <rect x="345" y="164" width="35" height="16" class="n"/>
+      <rect x="380" y="164" width="35" height="16" class="s"/>
+      <text x="362" y="176" text-anchor="middle" class="small on-dark">N</text>
+      <text x="397" y="176" text-anchor="middle" class="small on-dark">S</text>
+      <text x="380" y="196" text-anchor="middle" class="small muted">magnet (on door)</text>
+    </g>
+  </g>
+
+  <!-- LED loop: GPIO27 -> 330Ω -> LED -> GND -->
+  <g class="loop led-loop">
+    <polyline class="wire flow" points="188,225 260,225"/>
+    <polyline class="resistor flow" points="260,225 268,213 282,237 296,213 310,237 324,213 332,225 340,225"/>
+    <text x="300" y="203" text-anchor="middle" class="label">330 Ω</text>
+    <polyline class="wire flow" points="340,225 420,225"/>
+
+    <circle cx="436" cy="225" r="34" class="led-glow" fill="url(#glow)"/>
+    <polygon points="420,207 420,243 452,225" class="led-body"/>
+    <line x1="452" y1="207" x2="452" y2="243" class="led-bar"/>
+    <g class="led-rays">
+      <line x1="440" y1="202" x2="452" y2="186"/><polyline points="446,186 452,186 452,192"/>
+      <line x1="452" y1="206" x2="466" y2="192"/><polyline points="460,192 466,192 466,198"/>
+    </g>
+    <text x="414" y="256" text-anchor="middle" class="small muted">+</text>
+    <text x="458" y="256" text-anchor="middle" class="small muted">−</text>
+    <text x="500" y="254" text-anchor="middle" class="label">Red LED</text>
+
+    <polyline class="wire flow" points="452,225 540,225 540,275 188,275"/>
+  </g>
+
+  <!-- Live readouts -->
+  <g class="readouts">
+    <text x="570" y="132" class="small muted">GPIO<%= it.config.doorPin %> (input)</text>
+    <text x="570" y="154" class="value door-val" data-text="$door === 'open' ? 'HIGH · open' : 'LOW · closed'">LOW · closed</text>
+    <text x="570" y="217" class="small muted">GPIO<%= it.config.ledPin %> (output)</text>
+    <text x="570" y="239" class="value led-val" data-text="{off: 'LOW · LED off', steady: 'HIGH · LED on', slow: 'Blinking · slow', fast: 'Blinking · fast'}[$ledPattern]">LOW · LED off</text>
+  </g>
+</svg>

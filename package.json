@@ -1,0 +1,19 @@
+{
+  "name": "open-door-alert",
+  "version": "1.0.0",
+  "description": "Raspberry Pi 3 front-door monitor: red LED + ntfy phone alert, with a Datastar dashboard and simulator",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "dev": "node --env-file-if-exists=.env --watch src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22.9"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "eta": "^4.6.0"
+  }
+}
