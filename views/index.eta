@@ -55,7 +55,8 @@
             <span class="tree t1"></span><span class="tree t2"></span><span class="tree t3"></span>
             <span class="driveway"></span>
             <span class="house">
-              <span class="chimney"></span><span class="roof"></span>
+              <span class="chimney"></span><span class="roof"></span><span class="win attic"></span>
+              <span class="win w3"></span><span class="win w4"></span><span class="win w5"></span>
               <span class="win w1"></span><span class="win w2"></span><span class="house-door"></span>
               <span class="porch-floor"></span><span class="porch-steps"></span>
               <span class="rail r1"></span><span class="rail r2"></span>

@@ -246,7 +246,9 @@ kbd {
   --sky-bottom: oklch(90% 0.05 220);
   --cloud: oklch(98% 0 0);
   --lawn: oklch(68% 0.14 145);
-  --siding: oklch(70% 0.05 240);
+  --siding: oklch(91% 0.04 90); /* cream */
+  --shutter: oklch(46% 0.1 155);
+  --door: oklch(64% 0.08 65);
   --roof: oklch(35% 0.02 260);
   --window: oklch(78% 0.05 225);
   --road: oklch(45% 0.01 260);
@@ -386,26 +388,27 @@ kbd {
     transition: background 0.6s;
   }
   .t1 {
-    left: -6px;
-    bottom: 70px;
-    transform: scale(0.9);
+    left: -10px;
+    bottom: 88px;
+    transform: scale(1.1);
   }
   .t2 {
-    left: 66px;
-    bottom: 88px;
-    transform: scale(1.15);
+    left: 60px;
+    bottom: 118px;
+    transform: scale(1.25);
   }
   .t3 {
-    left: 146px;
-    bottom: 74px;
+    left: 108px;
+    bottom: 84px;
+    transform: scale(0.85);
   }
 
   /* Driveway beside the house, receding back from the sidewalk */
   .driveway {
     display: block;
-    left: 100px;
+    left: 98px;
     bottom: 39px;
-    width: 44px;
+    width: 42px;
     height: 41px;
     background:
       linear-gradient(oklch(0% 0 0 / 0.12), transparent 60%),
@@ -429,18 +432,18 @@ kbd {
     transition: background 0.6s;
   }
   .b1 {
-    left: 17px;
+    left: 13px;
   }
   .b2 {
-    left: 68px;
+    left: 64px;
   }
 
   .house {
     display: block;
-    left: 12px;
+    left: 8px;
     bottom: 49px;
     width: 84px;
-    height: 50px;
+    height: 84px; /* two storeys */
     background:
       repeating-linear-gradient(transparent 0 5px, oklch(0% 0 0 / 0.1) 5px 6px),
       var(--siding);
@@ -463,29 +466,86 @@ kbd {
       height: 22px;
       background: oklch(45% 0.1 30);
     }
+    /* double-hung: two sashes that slide vertically, split by a meeting rail */
     .win {
-      top: 10px;
+      bottom: 22px;
       width: 16px;
-      height: 14px;
+      height: 18px;
       background:
-        linear-gradient(white, white) center / 2px 100% no-repeat,
+        linear-gradient(white, white) center / 100% 2px no-repeat,
         var(--window);
       outline: 2px solid oklch(97% 0 0);
       transition: background 0.6s, box-shadow 0.6s;
     }
+    /* green louvred shutters either side of each window */
+    .win::before,
+    .win::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      bottom: -2px;
+      width: 4px;
+      background:
+        repeating-linear-gradient(transparent 0 2px, oklch(0% 0 0 / 0.2) 2px 3px),
+        var(--shutter);
+      transition: background 0.6s;
+    }
+    .win::before {
+      left: -7px;
+    }
+    .win::after {
+      right: -7px;
+    }
+    .w1,
+    .w2 {
+      width: 14px;
+    }
     .w1 {
-      left: 10px;
+      left: 8px;
     }
     .w2 {
-      right: 10px;
+      right: 8px;
+    }
+    /* second floor */
+    .w3,
+    .w4,
+    .w5 {
+      bottom: 58px;
+      width: 12px;
+    }
+    .w3 {
+      left: 8px;
+    }
+    .w4 {
+      left: 36px;
+    }
+    .w5 {
+      right: 8px;
+    }
+    /* small attic window in the gable */
+    .attic {
+      left: 37px;
+      bottom: calc(100% + 6px);
+      width: 10px;
+      height: 13px;
+
+      &::before,
+      &::after {
+        content: none;
+      }
     }
     .house-door {
       left: 35px;
       bottom: 7px;
       width: 14px;
       height: 26px;
-      border-radius: 7px 7px 0 0;
-      background: oklch(42% 0.15 25);
+      border-radius: 1px 1px 0 0;
+      /* light brown, glass in the top 60%, brass knob */
+      background:
+        radial-gradient(circle at 80% 76%, oklch(80% 0.12 85) 0 1px, transparent 1.5px),
+        linear-gradient(var(--window), var(--window)) 50% 2px / 10px 60% no-repeat,
+        var(--door);
+      transition: background 0.6s, box-shadow 0.6s;
     }
 
     /* Full-width front porch: raised deck with railings, steps up to the door */
@@ -690,7 +750,9 @@ kbd {
   /* --- night --- */
   &.night {
     --lawn: oklch(32% 0.06 150);
-    --siding: oklch(36% 0.04 250);
+    --siding: oklch(44% 0.03 85);
+    --shutter: oklch(28% 0.06 155);
+    --door: oklch(40% 0.05 60);
     --roof: oklch(20% 0.02 260);
     --road: oklch(25% 0.01 260);
     --road-line: oklch(55% 0.1 90);
